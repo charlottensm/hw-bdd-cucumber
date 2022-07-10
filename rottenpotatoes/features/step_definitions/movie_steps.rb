@@ -4,8 +4,9 @@ Given /the following movies exist/ do |movies_table|
   movies_table.hashes.each do |movie|
     # each returned element will be a hash whose key is the table header.
     # you should arrange to add that movie to the database here.
+    Movie.create!(title: movie[:title], rating: movie[:rating], description: movie[:description], release_date: movie[:release_date])
   end
-  fail "Unimplemented"
+  # fail "Unimplemented"
 end
 
 Then /(.*) seed movies should exist/ do | n_seeds |
@@ -29,10 +30,31 @@ When /I (un)?check the following ratings: (.*)/ do |uncheck, rating_list|
   # HINT: use String#split to split up the rating_list, then
   #   iterate over the ratings and reuse the "When I check..." or
   #   "When I uncheck..." steps in lines 89-95 of web_steps.rb
-  fail "Unimplemented"
+  rating_list.split(', ').each do |rating|
+    uncheck ? uncheck("ratings[#{rating}]") : check("ratings[#{rating}]")
+  end
+  # fail "Unimplemented"
 end
 
 Then /I should see all the movies/ do
   # Make sure that all the movies in the app are visible in the table
-  fail "Unimplemented"
+  Movie.all.each do |movie|
+    if page.respond_to? :should
+      page.should have_content(movie.title)
+    else
+      assert page.has_content?(movie.title)
+    end
+  end
+  # fail "Unimplemented"
 end
+
+Then /I should (not )?see the following movies: (.*)/ do |present, ratings_list|
+  all('movie tr > td:movie.rating').each do |td|
+    if present.nil?
+      rating_list.should include td.text
+    else
+      rating_list.should_not include td.text
+    end
+  end
+end 
+
